@@ -1,62 +1,47 @@
-# Roadmap — AnesthPredict
+# Roadmap — AnesthPredict 1.0
 
 ## ✔ Etapa 1 — Estrutura básica do projeto (CONCLUÍDA)
 - Criar repositório
-- Criar pastas `app/`, `backend/`, `docs/`
-- Criar README básico
-- Criar `.gitignore`
+- Definição da stack (Python/React)
+- Configuração do ambiente virtual (`venv`)
 
-## ✔ Etapa 2 — Backend mínimo (Node.js + Express) (CONCLUÍDA)
-- Inicializar o backend (`npm init`)
-- Instalar dependências (`express`, `cors`)
-- Criar `server.js`
-- Endpoint inicial funcionando (`/`)
-- Backend rodando em: http://localhost:3000
+## ✔ Etapa 2 — Backend & IA (Python + FastAPI) (CONCLUÍDA)
+- **Extração de Dados:** Script `extract_training_data.py` processando MIMIC-IV (37k+ pacientes com Peso/Altura reais).
+- **Treinamento:** Script `train_final.py` utilizando **XGBoost + SMOTE** (Balanceamento).
+- **Modelo:** Geração do arquivo `hypo_model.pkl`.
+- **API:** Servidor `api.py` com FastAPI rodando, validando dados (Pydantic) e calculando IMC.
+- **Segurança:** Configuração de CORS para comunicação local.
 
-## ✔ Etapa 3 — App Desktop (React + Vite → depois Electron) (CONCLUÍDA)
-- Tela de login simples (mock)
-- Dashboard do anestesista (mock, sem dados reais)
-- Formulário de paciente funcional
-- Histórico de previsões mock
-- **Observação:** Etapa considerada concluída apenas do ponto de vista funcional do front-end. O design final do dashboard e histórico só faz sentido quando tivermos dados reais da IA/backend.
+## ✔ Etapa 3 — Frontend (React + Vite) (CONCLUÍDA)
+- **Wizard de Cadastro:** Formulário em 7 passos (Dados, Comorbidades, Sinais Vitais, etc).
+- **Dashboard:** Visão geral com estatísticas e lista recente.
+- **Histórico:** Lista completa com indicadores visuais de risco (Badges coloridas).
+- **Detalhes (Prontuário):** Página de relatório completo com dados médicos originais salvos.
+- **Ajuda:** Página explicativa sobre o modelo e guia de uso.
+- **Persistência:** Sistema CRUD completo usando `localStorage` (Salvar, Ler, Excluir).
 
-## 🔄 Etapa 4 — IA (Prototipagem do Modelo)
-- Criar notebook `docs/model-prototype.ipynb`
-- Baixar dataset público de anestesia
-- Treinar modelo inicial (RandomForest / XGBoost)
-- Exportar o modelo (`model.pkl`)
-- Criar mini servidor Python local para integrar com Node
-  - Recebe dados clínicos e retorna previsão
+## ✔ Etapa 4 — Integração & Fluxo (CONCLUÍDA)
+- Conexão Frontend ↔ Backend (Axios/Fetch).
+- Tratamento de erros (Backend desligado, falha na previsão).
+- Cálculo automático de IMC e inferência em tempo real.
 
-## 🔄 Etapa 5 — Integração Backend ⇄ IA
-- Criar endpoint `/predict`  
-  - Recebe dados do paciente  
-  - Chama servidor Python  
-  - Retorna previsão para frontend
-- Criar endpoint `/generate-report`  
-  - Gera relatório em PDF com dados + previsão
+## ⏳ Etapa 5 — Empacotamento Desktop (Electron) (EM ANDAMENTO)
+- [✔] Configuração do `electron.js` (Janela 1920x1080).
+- [✔] Congelamento do Backend (`pyinstaller` gerando `backend.exe`).
+- [✔] Estruturação de pastas (Backend movido para `resources/`, site na raiz).
+- [✔] Configuração de Scripts (`npm run electron`).
+- [ ] Teste final do executável `.exe` (Build de Produção).
 
-## 🔄 Etapa 6 — Geração de PDF local
-- Criar serviço `/utils/pdfService.js`
-- Template com:
-  - Nome do paciente
-  - Parâmetros inseridos
-  - Resultado da IA
-  - Risco/alertas em destaque
-  - Recomendação automática
-- Exportar para PDF local
-
-## 🔄 Etapa 7 — Build final do App Desktop
-- Empacotar Electron
-- Criar executáveis:
-  - Windows (.exe)
-  - Mac (.app)
+## 🔒 Etapa 6 — Melhorias Futuras (V2.0)
+- Geração de PDF nativo (atualmente usamos `window.print` na tela de Detalhes).
+- Substituir `localStorage` por Banco de Dados local (SQLite) para maior segurança.
+- Login real com autenticação (atualmente é simulação local).
+- Modo Escuro (Dark Mode).
 
 ## 🎯 Status Atual
-[✔] Etapa 1  
-[✔] Etapa 2  
-[✔] Etapa 3 ← front-end funcional, design final depende da IA e dados  
-[ ] Etapa 4  
-[ ] Etapa 5  
-[ ] Etapa 6  
-[ ] Etapa 7
+- [✔] Etapa 1 (Estrutura)
+- [✔] Etapa 2 (Cérebro - Python/IA)
+- [✔] Etapa 3 (Corpo - React)
+- [✔] Etapa 4 (Conexão)
+- [⏳] Etapa 5 (Transformar em .exe) ← **VOCÊ ESTÁ AQUI**
+- [🔒] Etapa 6 (Polimento Final)

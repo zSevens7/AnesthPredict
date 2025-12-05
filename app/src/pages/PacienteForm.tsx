@@ -10,6 +10,9 @@ import type {
   AnestesiaDados,
 } from "../types/PacienteTypes";
 
+// IMPORTANTE: Importar o serviço que conecta com o Python
+import { predictHypotension } from "../services/predictionService"; 
+
 import Passo1Paciente from "../components/wizard/PassoDados";
 import Passo2Comorbidades from "../components/wizard/PassoComorbidades";
 import Passo3SinaisVitais from "../components/wizard/PassoSinaisVitais";
@@ -20,6 +23,7 @@ import PassoRevisao from "../components/wizard/PassoRevisao";
 
 export default function PacienteForm() {
   const [passo, setPasso] = useState(1);
+  const [loading, setLoading] = useState(false); // Para desabilitar botão enquanto calcula
   const navigate = useNavigate();
 
   const [dados, setDados] = useState<PacienteCompleto>({
@@ -31,17 +35,54 @@ export default function PacienteForm() {
     anestesia: {} as AnestesiaDados,
   });
 
-  const finalizarCadastro = () => {
-    console.log("Dados do paciente:", dados);
-    // opcional: salvar no localStorage
-    // localStorage.setItem("ultimoPaciente", JSON.stringify(dados));
-    navigate("/dashboard");
+  // --- FUNÇÃO FINALIZAR CORRIGIDA ---
+  const finalizarCadastro = async () => {
+    setLoading(true); // Trava o botão
+    try {
+      console.log("Enviando para IA...", dados);
+      
+      // 1. Chama o Python
+      const resultadoIA = await predictHypotension(dados);
+
+      // 2. Cria o registro para o histórico
+      const novoRegistro = {
+        id: Date.now(),
+        nome: dados.paciente.nome || "Paciente Sem Nome",
+        data: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString(), // Adicionei hora pra ficar melhor
+        risco: resultadoIA.risco,
+        probabilidade: resultadoIA.probabilidade, 
+        mensagem: resultadoIA.mensagem, // Salva a mensagem da IA
+        
+        // --- O PULO DO GATO ESTÁ AQUI EMBAIXO ---
+        // Salvamos os dados originais para poder ver na página de Detalhes depois
+        dados_medicos: dados 
+        // ---------------------------------------
+      };
+
+      // 3. Salva no Banco de Dados do Navegador (LocalStorage)
+      const historicoAntigo = JSON.parse(localStorage.getItem('historico_pacientes') || '[]');
+      historicoAntigo.push(novoRegistro);
+      localStorage.setItem('historico_pacientes', JSON.stringify(historicoAntigo));
+
+      // 4. Feedback para o usuário
+      alert(`Análise Concluída!\n\nRisco: ${resultadoIA.risco}\nProbabilidade: ${resultadoIA.probabilidade}%\n\nMensagem: ${resultadoIA.mensagem}`);
+
+      // 5. Vai para o Dashboard
+      navigate("/dashboard");
+
+    } catch (error) {
+      console.error("Erro:", error);
+      alert("Erro ao conectar com a IA. Verifique se o terminal do Python está aberto.");
+    } finally {
+      setLoading(false); // Destrava o botão
+    }
   };
 
   return (
     <div className="max-w-2xl mx-auto p-6 space-y-6">
       <h1 className="text-2xl font-bold">Cadastro do Paciente</h1>
 
+      {/* Renderização condicional dos passos */}
       {passo === 1 && (
         <Passo1Paciente
           data={dados.paciente}
@@ -92,37 +133,40 @@ export default function PacienteForm() {
       )}
       {passo === 7 && <PassoRevisao data={dados} />}
 
-      {/* BOTÕES */}
+      {/* BOTÕES DE NAVEGAÇÃO */}
       <div className="flex justify-between pt-4">
         {passo > 1 ? (
           <button
             onClick={() => setPasso(passo - 1)}
-            className="px-4 py-2 bg-gray-200 rounded"
+            disabled={loading}
+            className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
           >
             Voltar
           </button>
         ) : (
           <button
             onClick={() => navigate("/dashboard")}
-            className="px-4 py-2 bg-gray-200 rounded"
+            disabled={loading}
+            className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
           >
-            Voltar ao Dashboard
+            Cancelar
           </button>
         )}
 
         {passo < 7 ? (
           <button
             onClick={() => setPasso(passo + 1)}
-            className="px-4 py-2 bg-blue-600 text-white rounded"
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
             Próximo
           </button>
         ) : (
           <button
             onClick={finalizarCadastro}
-            className="px-4 py-2 bg-green-600 text-white rounded"
+            disabled={loading}
+            className={`px-4 py-2 text-white rounded flex items-center gap-2 ${loading ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'}`}
           >
-            Finalizar
+            {loading ? "Calculando com IA..." : "Finalizar e Calcular"}
           </button>
         )}
       </div>

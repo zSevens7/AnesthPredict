@@ -19,7 +19,7 @@ __pycache__/
 .venv/
 env/
 venv/
-.venv/
+ai/venv/
 
 # pip cache
 pip-wheel-metadata/
@@ -37,6 +37,19 @@ Thumbs.db
 .env.*
 .envrc
 
-# --- Packaging ---
+# --- Packaging & Executáveis (IMPORTANTE) ---
 *.egg-info/
 *.egg
+*.exe
+resources/backend.exe
+
+# --- Models / IA ---
+*.pkl
+models/
+
+# --- DADOS SENSÍVEIS (MIMIC - CRÍTICO) ---
+# Bloqueia qualquer CSV para evitar vazamento de dados de pacientes
+*.csv
+*.csv.gz
+# Bloqueia a pasta onde você baixou os originais
+DATA_RAW/
